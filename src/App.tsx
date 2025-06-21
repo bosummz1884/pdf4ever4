@@ -1,30 +1,51 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryclient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "../components/ui/toaster";
 import { TooltipProvider } from "../components/ui/tooltip";
-import ComprehensivePDFEditor from "../ComprehensivePDFEditor";
+import { Toaster } from "../components/ui/toaster";
+import { queryClient } from "@/lib/queryClient";
 
+// App pages/components
+import Home from "@/pages/home"; // renders editor and landing stacked (your preferred layout)
+import Landing from "@/pages/landing";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
+import NotFound from "@/pages/not-found";
 
-function Router() {
+// If you ever want to show just the editor: import ComprehensivePDFEditor from "@components/ComprehensivePDFEditor";
+
+function AppRouter() {
   return (
     <Switch>
-      <Route path="/" component={ComprehensivePDFEditor} />
-      <Route component={NotFound} />
+      {/* The home route: editor + landing page together */}
+      <Route path="/">
+        <Home />
+      </Route>
+      {/* Standalone landing page */}
+      <Route path="/landing">
+        <Landing />
+      </Route>
+      {/* Legal pages */}
+      <Route path="/privacy-policy">
+        <PrivacyPolicy />
+      </Route>
+      <Route path="/terms-of-service">
+        <TermsOfService />
+      </Route>
+      {/* 404 fallback */}
+      <Route>
+        <NotFound />
+      </Route>
     </Switch>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <ComprehensivePDFEditor />
+        <AppRouter />
         <Toaster />
-        <Router />
       </TooltipProvider>
     </QueryClientProvider>
   );
 }
-
-export default App;

@@ -1,28 +1,37 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
-// Initialize PDF.js worker
-import * as pdfjsLib from 'pdfjs-dist'
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js'
+// PDF.js worker setup (global, robust for Vite and prod)
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
-// Error boundary for better error handling
+// --- ErrorBoundary definition (same as before) ---
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; error: Error | null }
-> {
+/*************  ✨ Windsurf Command ⭐  *************/
+/**
+ * Constructs an instance of the ErrorBoundary component.
+ * Initializes the component state with default error values.
+ *
+ * @param props - The properties passed to the component, including children nodes.
+ */
+
+/*******  cfaf7d08-8f2f-484f-bbd7-6ab8eb8a5740  *******/> {
   constructor(props: { children: React.ReactNode }) {
-    super(props)
-    this.state = { hasError: false, error: null }
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('PDF Editor Error:', error, errorInfo)
+    console.error("PDF Editor Error:", error, errorInfo);
   }
 
   render() {
@@ -55,15 +64,14 @@ class ErrorBoundary extends React.Component<
             )}
           </div>
         </div>
-      )
+      );
     }
-
-    return this.props.children
+    return this.props.children;
   }
 }
 
-// Render the application
-const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+// --- Main render ---
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 
 root.render(
   <React.StrictMode>
@@ -71,4 +79,4 @@ root.render(
       <App />
     </ErrorBoundary>
   </React.StrictMode>
-)
+);
