@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { PDFDocument } from "pdf-lib";
 
+
 function ImageCompressor({ onCompressed }: { onCompressed?: (blob: Blob) => void }) {
   const handleCompress = async () => {
     const input = document.createElement("input");
@@ -397,11 +398,4 @@ function ImageToPdf({ onGenerated }: { onGenerated?: (pdfBytes: Uint8Array) => v
   );
 }
 
-export {
-  ImageCompressor,
-  ImageCropper,
-  ImageGallery,
-  ImageMerger,
-  ImageResizer,
-  ImageToPdf
-};
+export default { ImageCompressor, ImageCropper, ImageGallery, ImageMerger, ImageResizer, ImageToPdf };

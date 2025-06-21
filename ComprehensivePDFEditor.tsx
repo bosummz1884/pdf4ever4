@@ -1,12 +1,15 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { PDFDocument, rgb, StandardFonts, PageSizes, degrees, PDFFont, PDFTextField, PDFCheckBox, PDFRadioGroup, PDFDropdown } from "pdf-lib";
-import * as pdfjs from "pdfjs-dist/build/pdf";
+import * as pdfjsLib from 'pdfjs-dist';
 import "pdfjs-dist/build/pdf.worker.entry";
 import { Rnd } from "react-rnd";
 import { HexColorPicker } from "react-colorful";
 import { nanoid } from "nanoid";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+// Image tool imports
+import { ImageToPdf, ImageCompressor, ImageCropper, ImageMerger, ImageResizer } from "./components/image-tools";
 
 // OCR imports
 import OCRTool from "./components/OCRTool";
@@ -19,7 +22,7 @@ import { SignatureData, SignaturePlacement } from "./types/signature";
 // Import utilities from attached assets
 import { cn } from "./attached_assets/utils.ts";
 import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "./attached_assets/colorUtils";
-import { loadGoogleFont, loadWebFont, detectSystemFonts } from "./attached_assets/loadFonts.ts";
+import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "./attached_assets/loadFonts.ts";
 import { detectFonts, extractFontInfo, getFontVariants } from "./attached_assets/fontDetector.ts";
 import { saveFilledFormFieldsData, validateFormData, exportFormData } from "./attached_assets/savefilledformfields";
 import { 
@@ -41,58 +44,6 @@ import AdvancedTextLayer from "./attached_assets/AdvancedTextLayer";
 import AnnotationManager from "./attached_assets/AnnotationManager";
 import FontManager from "./attached_assets/FontManager";
 import PDFToolkit from "./attached_assets/PDFToolkit";
-
-// ========== UTILITY FUNCTIONS ==========
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-// Color utilities
-export function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) {
-    return { r: 0, g: 0, b: 0 };
-  }
-  
-  return {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16),
-  };
-}
-
-export function rgbToHex(r: number, g: number, b: number): string {
-  const toHex = (n: number) => {
-    const hex = n.toString(16);
-    return hex.length === 1 ? '0' + hex : hex;
-  };
-  
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
-
-export function hexToRgbNormalized(hex: string): { r: number; g: number; b: number } {
-  const { r, g, b } = hexToRgb(hex);
-  return {
-    r: r / 255,
-    g: g / 255,
-    b: b / 255,
-  };
-}
-
-const commonColors = [
-  { name: 'Black', hex: '#000000' },
-  { name: 'White', hex: '#FFFFFF' },
-  { name: 'Red', hex: '#FF0000' },
-  { name: 'Green', hex: '#008000' },
-  { name: 'Blue', hex: '#0000FF' },
-  { name: 'Yellow', hex: '#FFFF00' },
-  { name: 'Orange', hex: '#FFA500' },
-  { name: 'Purple', hex: '#800080' },
-  { name: 'Gray', hex: '#808080' },
-  { name: 'Dark Gray', hex: '#404040' },
-  { name: 'Light Gray', hex: '#C0C0C0' },
-  { name: 'Navy', hex: '#000080' },
-];
 
 // Available fonts
 const availableFonts = [
@@ -256,7 +207,7 @@ class PDFCoreService {
   async initializeWorker(): Promise<void> {
     if (this.workerInitialized) return;
     
-    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
     this.workerInitialized = true;
   }
 
@@ -264,7 +215,7 @@ class PDFCoreService {
     await this.initializeWorker();
     
     const data = file instanceof File ? await file.arrayBuffer() : file;
-    return await pdfjs.getDocument({ data }).promise;
+    return await pdfjsLib.getDocument({ data }).promise;
   }
 
   async renderPage(
@@ -404,12 +355,12 @@ class PDFCoreService {
           case 'Btn':
             if (field.radioGroup) {
               const radioGroup = form.getRadioGroup(field.radioGroup);
-              if (field.value === 'Yes' || field.value === true) {
+              if (field.value === 'Yes') {
                 radioGroup.select(field.fieldName);
               }
             } else {
               const checkBox = form.getCheckBox(field.fieldName);
-              if (field.value === 'Yes' || field.value === true) {
+              if (field.value === 'Yes') {
                 checkBox.check();
               } else {
                 checkBox.uncheck();
@@ -608,27 +559,35 @@ class PDFCoreService {
   }
 
   async exportWithAllElements(
-    originalPdfData: ArrayBuffer,
-    textElements: TextBox[],
-    formFields: FormField[],
-    annotations: Annotation[]
-  ): Promise<Uint8Array> {
-    let pdfBytes: Uint8Array = new Uint8Array(originalPdfData);
+  originalPdfData: ArrayBuffer,
+  textElements: TextBox[],
+  formFields: FormField[],
+  annotations: Annotation[]
+): Promise<Uint8Array> {
+  let pdfBytes: Uint8Array = new Uint8Array(originalPdfData);
 
-    if (textElements.length > 0) {
-      pdfBytes = await this.addTextElementsToPDF(pdfBytes.buffer, textElements);
-    }
-  
-    if (formFields.length > 0) {
-      pdfBytes = await this.fillFormFields(pdfBytes.buffer, formFields);
-    }
-  
-    if (annotations.length > 0) {
-      pdfBytes = await this.addAnnotationsToPDF(pdfBytes.buffer, annotations);
-    }
-  
-    return pdfBytes;
+  // Helper to force ArrayBuffer for PDF-lib functions
+  const getArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  // Make a new ArrayBuffer and copy contents (works in all runtimes)
+  const ab = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(ab).set(bytes);
+  return ab;
+};
+
+  if (textElements.length > 0) {
+    pdfBytes = await this.addTextElementsToPDF(getArrayBuffer(pdfBytes), textElements);
   }
+
+  if (formFields.length > 0) {
+    pdfBytes = await this.fillFormFields(getArrayBuffer(pdfBytes), formFields);
+  }
+
+  if (annotations.length > 0) {
+    pdfBytes = await this.addAnnotationsToPDF(getArrayBuffer(pdfBytes), annotations);
+  }
+
+  return pdfBytes;
+}
 
   // Generate invoice
   async generateInvoice(invoiceData: InvoiceData): Promise<Uint8Array> {
@@ -826,14 +785,8 @@ class FontFaceObserver {
 }
 
 // ========== MAIN COMPONENT ==========
-interface ComprehensivePDFEditorProps {
-  className?: string;
-}
+const ComprehensivePDFEditor = (props: { className?: string }) => { 
 
-export default function ComprehensivePDFEditor({
-  className,
-}: ComprehensivePDFEditorProps) {
-  // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const annotationCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1210,7 +1163,7 @@ export default function ComprehensivePDFEditor({
   }, [zoom]);
 
   // Canvas mouse event handlers
-  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (currentTool === "text" && isAddingText) {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -1525,7 +1478,7 @@ export default function ComprehensivePDFEditor({
       );
       setProgress(75);
 
-      const blob = new Blob([exportedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(exportedPdfBytes)], { type: "application/pdf" });
       pdfCore.downloadBlob(blob, `${fileName.replace('.pdf', '')}-edited.pdf`);
       setProgress(100);
     } catch (error) {
@@ -1537,7 +1490,7 @@ export default function ComprehensivePDFEditor({
   }, [originalFileData, textBoxes, detectedFormFields, annotations, fileName]);
 
    return (
-    <div className={cn("h-screen flex flex-col bg-gray-50", className)}>
+    <div className="h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-4">
         <div className="flex items-center justify-between">
@@ -1637,7 +1590,7 @@ export default function ComprehensivePDFEditor({
                   onComplete={handleSignatureComplete}
                   onPlace={handleSignaturePlaced}
                   onClose={handleSignatureClose}
-                  signatureDataUrl={currentSignature}
+                  signatureDataUrl={currentSignature ?? undefined}
                 />
 
                 {signatures.length > 0 && (
@@ -1931,4 +1884,4 @@ export default function ComprehensivePDFEditor({
   );
 };
 
-export default PdfEditor; 
+export default ComprehensivePDFEditor; 

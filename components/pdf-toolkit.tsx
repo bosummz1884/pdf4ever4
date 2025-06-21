@@ -37,7 +37,7 @@ import {
   Settings,
 } from "lucide-react";
 import { PDFFile, SplitRange, PDFToolkitProps, InvoiceData } from "../types/pdf-types";
-import { pdfCore } from "./services/pdf-core";
+import { pdfCore } from "../services/pdf-core";
 
 export default function PDFToolkit({
   onFileProcessed,
