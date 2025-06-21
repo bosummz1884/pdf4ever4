@@ -1,4 +1,4 @@
-interface OCRResult {
+export interface OCRResult {
   id: string;
   text: string;
   confidence: number;
@@ -11,7 +11,7 @@ interface OCRResult {
   page: number;
 }
 
-interface OCRToolProps {
+export interface OCRToolProps {
   pdfDocument?: any;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
   currentPage?: number;
@@ -20,7 +20,7 @@ interface OCRToolProps {
   onTextExtracted?: (text: string) => void;
 }
 
-interface OCRLanguage {
+export interface OCRLanguage {
   code: string;
   name: string;
 }

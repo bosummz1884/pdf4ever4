@@ -16,11 +16,12 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "*": ["src/*"],
+      "@/*": ["src/*"],
+      "@src/*": ["src/*"],
       "@utils/*": ["src/utils/*"],
       "@ui/*": ["components/ui/*"],
       "@attached_assets/*": ["src/attached_assets/*"],
-      "@ComprehensivePDFEditor": ["./components/ComprehensivePDFEditor"],
+      "@ComprehensivePDFEditor": ["components/ComprehensivePDFEditor"],
       "@components/*": ["components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@lib/*": ["src/lib/*"],
@@ -36,9 +37,6 @@
   "exclude": [
     "node_modules",
     "dist",
-    "build",
-    "out",
-    "**/*.test.ts",
-    "**/*.test.tsx"
+    "bin"
   ]
 }

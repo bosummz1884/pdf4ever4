@@ -4,7 +4,7 @@ import * as pdfjsLib from 'pdfjs-dist';
  * Detects font names used in the first page of the PDF file.
  * Returns an array of font names in use.
  */
-export async function detectFontsInPDF(file: File): Promise<Set<string>> {
+export async function detectFonts(file: File): Promise<Set<string>> {
   try {
     const buffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;

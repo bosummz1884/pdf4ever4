@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { PDFDocument, rgb, StandardFonts, PageSizes, degrees, PDFFont, PDFTextField, PDFCheckBox, PDFRadioGroup, PDFDropdown } from "pdf-lib";
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry";
 import { Rnd } from "react-rnd";
 import { HexColorPicker } from "react-colorful";
@@ -8,23 +8,20 @@ import { nanoid } from "nanoid";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// Image tool imports
-import { ImageToPdf, ImageCompressor, ImageCropper, ImageMerger, ImageResizer } from "./components/image-tools";
-
 // OCR imports
 import OCRTool from "@components/OCRTool";
-import { OCRResult } from "./src/types/ocr";
+import { OCRResult } from "@/types/ocr";
 
 // Signature imports
 import SignatureTool from "@components/SignatureTool";
-import { SignatureData, SignaturePlacement } from "@types/signature";
+import { SignatureData, SignaturePlacement } from "@/types/signature";
 
 // Import utilities from attached assets
 import { cn } from "@utils/utils";
-import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "@attached_assets/colorUtils";
-import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "@attached_assets/loadFonts";
-import { detectFonts, extractFontInfo, getFontVariants } from "@attached_assets/fontDetector";
-import { saveFilledFormFieldsData, validateFormData, exportFormData } from "@attached_assets/savefilledformfields";
+import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "@/attached_assets/colorUtils";
+import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "@/attached_assets/loadFonts";
+import { detectFonts, extractFontInfo, getFontVariants } from "@/attached_assets/fontDetector";
+
 import { 
   mergePDFs, 
   extractPagesFromPdf, 

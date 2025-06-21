@@ -4,7 +4,12 @@ yarn-debug.log*
 yarn-error.log*
 
 # Production builds
-build/
+dist/
+bin/
+.cache/
+.vscode/
+.DS_Store
+pnpm-debug.log
 
 # Environment variables
 .env.development.local

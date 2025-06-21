@@ -28,7 +28,7 @@ import {
   X
 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { Annotation, AnnotationTool, AnnotationToolsProps } from "../types/pdf-types";
+import { Annotation, AnnotationTool, AnnotationToolsProps } from "@ty/pdf-types";
 
 // Predefined colors for quick selection
 const colorPalette = [
