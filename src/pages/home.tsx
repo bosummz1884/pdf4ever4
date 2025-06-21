@@ -1,19 +1,30 @@
 import { useAuth } from "@hooks/use-auth";
 import Landing from "./landing";
-import ComprehensivePDFEditor from "@ComprehensivePDFEditor";
+import ComprehensivePDFEditor from "@components/ComprehensivePDFEditor";
 import { Button } from "@ui/button";
 import { LogOut, User } from "lucide-react";
 
 function AuthenticatedHome() {
+  // When the user is authenticated, this component is rendered. It
+  // displays a minimal header with a logo, a greeting, and a sign-out
+  // button. The rest of the screen is occupied by the ComprehensivePDFEditor
+  // component, which is a full-fledged PDF editor.
   const { user, logout } = useAuth();
 
   return (
+    // The outermost div is the container for the entire page. It has a
+    // background color set to the background color of the theme.
     <div className="h-screen bg-background flex flex-col">
       {/* Minimal Header */}
+      // The header is a horizontal bar at the top of the screen. It
+      // contains the logo, a greeting, and a sign-out button.
       <header className="border-b bg-white dark:bg-gray-900 px-4 py-3 flex items-center justify-between shrink-0">
+        // The logo is a 70x70 image of the PDF4EVER logo.
         <div className="flex items-center space-x-3">
           <img src="/70x70logo.png" alt="PDF4EVER Logo" className="h-8 w-8" />
 
+          // The greeting is a combination of the user's first and last
+          // names, separated by a space.
           <span className="text-xl font-bold">
             <span style={{ color: "#005aff" }}>PDF4</span>
             <span style={{ color: "#ff3900" }}>EVER</span>

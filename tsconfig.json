@@ -20,7 +20,6 @@
       "@utils/*": ["src/utils/*"],
       "@ui/*": ["components/ui/*"],
       "@attached_assets/*": ["src/attached_assets/*"],
-      "@ComprehensivePDFEditor": ["components/ComprehensivePDFEditor"],
       "@components/*": ["components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@lib/*": ["src/lib/*"],
