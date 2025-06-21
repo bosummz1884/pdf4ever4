@@ -23,7 +23,8 @@ export default defineConfig({
       '@ALLFUNCTIONFILES': path.resolve(__dirname, 'ALLFUNCTIONFILES'),
       '@utils': path.resolve(__dirname, 'src/utils'),
       '@attached_assets': path.resolve(__dirname, 'src/attached_assets'),
-      '@ui': path.resolve(__dirname, 'components/ui')
+      '@ui': path.resolve(__dirname, 'components/ui'),
+      "@hooks": path.resolve(__dirname, "src/hooks"),
     }
   },
 
