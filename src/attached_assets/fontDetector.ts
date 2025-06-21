@@ -37,7 +37,7 @@ export class EnhancedFontDetector {
   ];
   
   async analyzePDFFonts(file: File): Promise<Set<string>> {
-    this.detectedFonts = await detectFontsInPDF(file);
+    this.detectedFonts = await detectFonts(file);
     return this.detectedFonts;
   }
   

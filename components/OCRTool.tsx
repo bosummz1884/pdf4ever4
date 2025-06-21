@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, ChangeEvent, DragEvent } from "react";
-import { ocrService, OCR_LANGUAGES } from "../services/ocrService";
-import { OCRResult, OCRToolProps } from "../types/ocr";
+import { ocrService, OCR_LANGUAGES } from "@/services/ocrService";
+import { OCRResult, OCRToolProps } from "@/types/ocr";
 
 const OCRTool: React.FC<OCRToolProps> = ({
   pdfDocument,
@@ -71,7 +71,7 @@ const OCRTool: React.FC<OCRToolProps> = ({
 
         setExtractedText(ocrText);
         setOcrResults(results);
-        setPreviewUrl(preview);
+        setPreviewUrl(preview ?? null);
         onTextDetected?.(results);
         onTextExtracted?.(ocrText);
         setProgress(100);
@@ -162,11 +162,14 @@ const OCRTool: React.FC<OCRToolProps> = ({
   );
 
   const highlightTextOnCanvas = useCallback(
-    (result: OCRResult) => {
+  (result: OCRResult) => {
+    if (canvasRef) {
       ocrService.highlightTextOnCanvas(result, canvasRef);
-    },
-    [canvasRef]
-  );
+    }
+  },
+  [canvasRef]
+);
+
 
   const handleQuickImageOCR = async () => {
     const input = document.createElement("input");

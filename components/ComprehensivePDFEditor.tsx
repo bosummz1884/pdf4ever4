@@ -20,7 +20,7 @@ import { SignatureData, SignaturePlacement } from "@/types/signature";
 import { cn } from "@utils/utils";
 import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "@/attached_assets/colorUtils";
 import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "@/attached_assets/loadFonts";
-import { detectFonts, extractFontInfo, getFontVariants } from "@/attached_assets/fontDetector";
+import { detectFonts } from "@/attached_assets/fontDetector";
 
 import { 
   mergePDFs, 

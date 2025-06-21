@@ -4,7 +4,7 @@ import { HexColorPicker } from "react-colorful";
 import { nanoid } from "nanoid";
 import { Button } from "@ui/button";
 import { Trash2, Bold, Italic, Type, Plus } from "lucide-react";
-import { TextElement, TextEditorProps, FontInfo } from "./types/pdf-types";
+import { TextElement, TextEditorProps, FontInfo } from "@/types/pdf-types";
 
 // Available fonts for text editing
 const availableFonts = [
