@@ -48,7 +48,6 @@ temp/
 
 # Replit specific
 .replit
-attached_assets/
 pdf4ever
 pdf4ever-project.tar.gz
 supabase_schema.sql

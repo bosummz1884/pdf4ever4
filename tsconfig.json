@@ -18,12 +18,20 @@
     "paths": {
       "*": ["src/*"],
       "@utils/*": ["src/utils/*"],
+      "@ui/*": ["components/ui/*"],
+      "@attached_assets/*": ["src/attached_assets/*"],
+      "@ComprehensivePDFEditor": ["./components/ComprehensivePDFEditor"],
+      "@components/*": ["components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@lib/*": ["src/lib/*"],
+      "@types/*": ["src/types/*"],
+
     }
   },
   "include": [
-    "src",
-    "attached_assets",
-    "components"
+    "src/**/*",
+    "attached_assets/**/*",
+    "components/**/*",
   ],
   "exclude": [
     "node_modules",

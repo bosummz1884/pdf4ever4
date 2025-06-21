@@ -1,5 +1,5 @@
 import { createWorker, PSM, RecognizeResult, Worker } from "tesseract.js";
-import * as pdfjsLib from "pdfjs-dist/build/pdf.mjs";
+import * as pdfjsLib from "pdfjs-dist";
 import { OCRResult, OCRLanguage } from "../types/ocr";
 
 // Set the worker location

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@ui/card";
+import { Badge } from "@ui/badge";
 import { Check, Zap, Crown, FileText } from "lucide-react";
 import { Link } from "wouter";
 

@@ -12,19 +12,19 @@ import { twMerge } from "tailwind-merge";
 import { ImageToPdf, ImageCompressor, ImageCropper, ImageMerger, ImageResizer } from "./components/image-tools";
 
 // OCR imports
-import OCRTool from "./components/OCRTool";
-import { OCRResult } from "./types/ocr";
+import OCRTool from "@components/OCRTool";
+import { OCRResult } from "./src/types/ocr";
 
 // Signature imports
-import SignatureTool from "./components/SignatureTool";
-import { SignatureData, SignaturePlacement } from "./types/signature";
+import SignatureTool from "@components/SignatureTool";
+import { SignatureData, SignaturePlacement } from "@types/signature";
 
 // Import utilities from attached assets
-import { cn } from "./attached_assets/utils.ts";
-import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "./attached_assets/colorUtils";
-import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "./attached_assets/loadFonts.ts";
-import { detectFonts, extractFontInfo, getFontVariants } from "./attached_assets/fontDetector.ts";
-import { saveFilledFormFieldsData, validateFormData, exportFormData } from "./attached_assets/savefilledformfields";
+import { cn } from "@utils/utils";
+import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "@attached_assets/colorUtils";
+import { loadFonts, getAvailableFontNames, getFontPath, isFontAvailable } from "@attached_assets/loadFonts";
+import { detectFonts, extractFontInfo, getFontVariants } from "@attached_assets/fontDetector";
+import { saveFilledFormFieldsData, validateFormData, exportFormData } from "@attached_assets/savefilledformfields";
 import { 
   mergePDFs, 
   extractPagesFromPdf, 
@@ -37,13 +37,13 @@ import {
   convertToPDFA, 
   downloadPDF, 
   safePDFOperation 
-} from "./attached_assets/ConsolidatedPDFUtils";
+} from "@attached_assets/ConsolidatedPDFUtils";
 
 // Import components from attached assets  
-import AdvancedTextLayer from "./attached_assets/AdvancedTextLayer";
-import AnnotationManager from "./attached_assets/AnnotationManager";
-import FontManager from "./attached_assets/FontManager";
-import PDFToolkit from "./attached_assets/PDFToolkit";
+import AdvancedTextLayer from "@attached_assets/AdvancedTextLayer";
+import AnnotationManager from "@attached_assets/AnnotationManager";
+import FontManager from "@attached_assets/FontManager";
+import PDFToolkit from "@attached_assets/PDFToolkit";
 
 // Available fonts
 const availableFonts = [

@@ -1,9 +1,9 @@
-interface SignatureData {
+export interface SignatureData {
   dataUrl: string;
   hash?: string;
 }
 
-interface SignatureToolProps {
+export interface SignatureToolProps {
   onSave?: (dataUrl: string) => void;
   onComplete?: (dataUrl: string) => void;
   onSigned?: (result: SignatureData) => void;
@@ -12,7 +12,7 @@ interface SignatureToolProps {
   onPlace?: (placement: SignaturePlacement) => void;
 }
 
-interface SignaturePlacement {
+export interface SignaturePlacement {
   x: number;
   y: number;
   width: number;
@@ -21,7 +21,7 @@ interface SignaturePlacement {
   page?: number;
 }
 
-interface SignaturePadProps {
+export interface SignaturePadProps {
   onSave?: (dataUrl: string) => void;
   onComplete?: (dataUrl: string) => void;
   onSigned?: (result: SignatureData) => void;

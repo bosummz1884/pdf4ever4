@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from "react";
 import { Rnd } from "react-rnd";
 import { HexColorPicker } from "react-colorful";
 import { nanoid } from "nanoid";
-import { Button } from "@/components/ui/button";
+import { Button } from "@ui/button";
 import { Trash2, Bold, Italic, Type, Plus } from "lucide-react";
 import { TextElement, TextEditorProps, FontInfo } from "../types/pdf-types";
 

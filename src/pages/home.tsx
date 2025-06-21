@@ -1,7 +1,7 @@
-import { useAuth } from "./hooks/useAuth";
+import { useAuth } from "@hooks/use-auth";
 import Landing from "./landing";
-import ComprehensivePDFEditor from "../ComprehensivePDFEditor";
-import { Button } from ".././components/ui/button";
+import ComprehensivePDFEditor from "@ComprehensivePDFEditor";
+import { Button } from "@ui/button";
 import { LogOut, User } from "lucide-react";
 
 function AuthenticatedHome() {
@@ -40,8 +40,7 @@ function AuthenticatedHome() {
     </div>
   );
 }
-
-export default function Home() {
+function Home() {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
 
   if (isLoading) {

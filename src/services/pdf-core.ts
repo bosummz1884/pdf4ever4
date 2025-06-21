@@ -1,11 +1,10 @@
 import { PDFDocument, StandardFonts, rgb, PDFPage, PDFFont, degrees } from 'pdf-lib';
-import * as pdfjs from 'pdfjs-dist/build/pdf';
+import * as pdfjs from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import { 
   PDFFile, 
   TextElement, 
-  FormField, 
-  AnnotationElement, 
+  FormField,  
   Annotation,
   RGBColor,
   FontInfo 
@@ -233,7 +232,7 @@ export class PDFCoreService {
   // ========== Annotation Operations ==========
   async addAnnotationsToPDF(
     pdfData: ArrayBuffer,
-    annotations: (Annotation | AnnotationElement)[]
+    annotations: Annotation[]
   ): Promise<Uint8Array> {
     const pdfDoc = await PDFDocument.load(pdfData);
     const pages = pdfDoc.getPages();
@@ -378,7 +377,8 @@ export class PDFCoreService {
     originalPdfData: ArrayBuffer,
     textElements: TextElement[],
     formFields: FormField[],
-    annotations: (Annotation | AnnotationElement)[]
+    annotations: Annotation[]
+
   ): Promise<Uint8Array> {
     let pdfBytes: Uint8Array = new Uint8Array(originalPdfData);
 
