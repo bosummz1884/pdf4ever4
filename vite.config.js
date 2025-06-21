@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import pages from 'vite-plugin-pages';
-import sitemap from 'vite-plugin-sitemap';
 import fs from 'fs';
 
 export default defineConfig({
@@ -12,17 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     pages(),
-    sitemap(),
-    // Safe wrapper to create dist/ before sitemap runs
-    {
-      name: 'prepare-dist-before-sitemap',
-      closeBundle() {
-        const distPath = path.resolve(__dirname, 'dist');
-        if (!fs.existsSync(distPath)) {
-          fs.mkdirSync(distPath, { recursive: true });
-        }
-      }
-    }
+   
   ],
 
   resolve: {
