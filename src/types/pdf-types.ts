@@ -1,7 +1,7 @@
 // Unified type definitions for all PDF editor functionality
 
 // ========== Core PDF Types ==========
-export interface PDFFile {
+interface PDFFile {
   id: string;
   name: string;
   size: number;
@@ -10,7 +10,7 @@ export interface PDFFile {
   preview?: string;
 }
 
-export interface PDFMergeOptions {
+interface PDFMergeOptions {
   title?: string;
   author?: string;
   subject?: string;
@@ -18,13 +18,13 @@ export interface PDFMergeOptions {
   creator?: string;
 }
 
-export interface PDFSplitOptions {
+interface PDFSplitOptions {
   outputFormat?: "separate" | "range";
   pageRanges?: Array<{ start: number; end: number }>;
   prefix?: string;
 }
 
-export interface SplitRange {
+interface SplitRange {
   id: string;
   start: number;
   end: number;
@@ -32,7 +32,7 @@ export interface SplitRange {
 }
 
 // ========== Text Element Types ==========
-export interface TextElement {
+interface TextElement {
   id: string;
   page: number;
   x: number;
@@ -59,7 +59,7 @@ export interface TextElement {
 export type TextBox = TextElement;
 
 // ========== Font Management Types ==========
-export interface FontInfo {
+interface FontInfo {
   name: string;
   family: string;
   style: string;
@@ -70,7 +70,7 @@ export interface FontInfo {
 }
 
 // ========== Annotation Types ==========
-export interface BaseAnnotation {
+interface BaseAnnotation {
   id: string;
   page: number;
   x: number;
@@ -81,30 +81,30 @@ export interface BaseAnnotation {
   strokeWidth: number;
 }
 
-export interface ShapeAnnotation extends BaseAnnotation {
+interface ShapeAnnotation extends BaseAnnotation {
   type: "rectangle" | "circle" | "line";
 }
 
-export interface HighlightAnnotation extends BaseAnnotation {
+interface HighlightAnnotation extends BaseAnnotation {
   type: "highlight";
 }
 
-export interface FreeformAnnotation extends BaseAnnotation {
+interface FreeformAnnotation extends BaseAnnotation {
   type: "freeform" | "signature";
   points: number[];
 }
 
-export interface TextAnnotation extends BaseAnnotation {
+interface TextAnnotation extends BaseAnnotation {
   type: "text";
   text: string;
   fontSize: number;
 }
 
-export interface MarkAnnotation extends BaseAnnotation {
+interface MarkAnnotation extends BaseAnnotation {
   type: "checkmark" | "x-mark";
 }
 
-export interface ImageAnnotation extends BaseAnnotation {
+interface ImageAnnotation extends BaseAnnotation {
   type: "image";
   src: string;
 }
@@ -118,7 +118,7 @@ export type Annotation =
   | ImageAnnotation;
 
 // Legacy annotation interface for backward compatibility
-export interface AnnotationElement {
+interface AnnotationElement {
   id: string;
   type: "highlight" | "rectangle" | "circle" | "freeform" | "signature";
   x: number;
@@ -132,7 +132,7 @@ export interface AnnotationElement {
 }
 
 // ========== Form Field Types ==========
-export interface FormField {
+interface FormField {
   id: string;
   name?: string;
   fieldName: string;
@@ -168,13 +168,13 @@ export type AnnotationTool =
 export type TextTool = "add" | "edit" | "select";
 
 // ========== Color and Style Types ==========
-export interface RGBColor {
+interface RGBColor {
   r: number;
   g: number;
   b: number;
 }
 
-export interface StyleOptions {
+interface StyleOptions {
   color: string;
   strokeWidth: number;
   fontSize: number;
@@ -184,18 +184,18 @@ export interface StyleOptions {
 }
 
 // ========== Canvas and Rendering Types ==========
-export interface CanvasPoint {
+interface CanvasPoint {
   x: number;
   y: number;
 }
 
-export interface ViewportOptions {
+interface ViewportOptions {
   scale: number;
   rotation: number;
 }
 
 // ========== Invoice Types (from PDFToolkit) ==========
-export interface InvoiceData {
+interface InvoiceData {
   invoiceNumber: string;
   date: string;
   dueDate?: string;
@@ -228,7 +228,7 @@ export interface InvoiceData {
 }
 
 // ========== Event Handler Types ==========
-export interface PDFEditorCallbacks {
+interface PDFEditorCallbacks {
   onTextElementsChange?: (elements: TextElement[]) => void;
   onAnnotationsChange?: (annotations: Annotation[]) => void;
   onFormFieldsChange?: (fields: FormField[]) => void;
@@ -238,7 +238,7 @@ export interface PDFEditorCallbacks {
 }
 
 // ========== Component Props Types ==========
-export interface BaseComponentProps {
+ interface BaseComponentProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
   currentPage: number;
   zoom?: number;
@@ -247,7 +247,7 @@ export interface BaseComponentProps {
   showControls?: boolean;
 }
 
-export interface TextEditorProps extends BaseComponentProps {
+interface TextEditorProps extends BaseComponentProps {
   textElements?: TextElement[];
   onTextElementsChange?: (elements: TextElement[]) => void;
   addMode?: boolean;
@@ -256,7 +256,7 @@ export interface TextEditorProps extends BaseComponentProps {
   fontColor?: string;
 }
 
-export interface AnnotationToolsProps extends BaseComponentProps {
+interface AnnotationToolsProps extends BaseComponentProps {
   annotations?: Annotation[];
   onAnnotationsChange?: (annotations: Annotation[]) => void;
   currentTool?: AnnotationTool;
@@ -264,21 +264,19 @@ export interface AnnotationToolsProps extends BaseComponentProps {
   strokeWidth?: number;
 }
 
-export interface PDFToolkitProps {
+ interface PDFToolkitProps {
   onFileProcessed?: (file: PDFFile) => void;
   currentFile?: PDFFile;
   files?: PDFFile[];
 }
 
-export {
+export type {
   PDFFile,
   PDFMergeOptions,
   PDFSplitOptions,
   SplitRange,
   TextElement,
-  TextBox,
   FontInfo,
-  Annotation,
   BaseAnnotation,
   ShapeAnnotation,
   HighlightAnnotation,
@@ -287,8 +285,6 @@ export {
   MarkAnnotation,
   ImageAnnotation,
   FormField,
-  AnnotationTool,
-  TextTool,
   RGBColor,
   StyleOptions,
   CanvasPoint,

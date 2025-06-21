@@ -8,7 +8,7 @@ import {
   AnnotationTool 
 } from "../types/pdf-types";
 
-export interface UsePDFOperationsOptions {
+interface UsePDFOperationsOptions {
   onFileLoaded?: (file: PDFFile) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: number) => void;
