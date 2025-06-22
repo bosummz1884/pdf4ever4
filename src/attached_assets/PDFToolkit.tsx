@@ -1,21 +1,21 @@
 import React, { useState, useCallback, useRef } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Progress } from "./ui/progress";
-import { Badge } from "./ui/badge";
-import { ScrollArea } from "./ui/scroll-area";
-import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Progress } from "../components/ui/progress";
+import { Badge } from "../components/ui/badge";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Separator } from "./ui/separator";
+} from "../components/ui/select";
+import { Separator } from "../components/ui/separator";
 import {
   Upload,
   Download,
@@ -36,15 +36,34 @@ import {
   Eye,
   Settings,
 } from "lucide-react";
-import { PDFFile, SplitRange, PDFToolkitProps, InvoiceData } from "@/types/pdf-types";
-import { pdfCore } from "@/services/pdf-core";
+import { pdfCore } from "../services/pdf-Core";
+
+interface PDFFile {
+  id: string;
+  name: string;
+  size: number;
+  data: ArrayBuffer;
+  pageCount?: number;
+  preview?: string;
+}
+
+interface SplitRange {
+  id: string;
+  start: number;
+  end: number;
+  name: string;
+}
+
+interface PDFToolkitProps {
+  onFileProcessed?: (file: PDFFile) => void;
+  currentFile?: PDFFile;
+}
 
 export default function PDFToolkit({
   onFileProcessed,
   currentFile,
-  files: initialFiles = []
 }: PDFToolkitProps) {
-  const [files, setFiles] = useState<PDFFile[]>(initialFiles);
+  const [files, setFiles] = useState<PDFFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState("merge");
@@ -53,66 +72,58 @@ export default function PDFToolkit({
   const [compressionLevel, setCompressionLevel] = useState("medium");
   const [rotationAngle, setRotationAngle] = useState(90);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
-  const [invoiceData, setInvoiceData] = useState<InvoiceData>({
-    invoiceNumber: "",
-    date: new Date().toISOString().split('T')[0],
-    from: { name: "", address: [""] },
-    to: { name: "", address: [""] },
-    items: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
-    subtotal: 0,
-    total: 0
-  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mergeInputRef = useRef<HTMLInputElement>(null);
 
-  // File upload handler
-  const handleFileUpload = useCallback(async (uploadedFiles: FileList, isMerge = false) => {
-    setIsProcessing(true);
-    setProgress(0);
+  const handleFileUpload = useCallback(
+    async (files: FileList, isMerge = false) => {
+      setIsProcessing(true);
+      setProgress(0);
 
-    const newFiles: PDFFile[] = [];
+      const uploadedFiles: PDFFile[] = [];
 
-    for (let i = 0; i < uploadedFiles.length; i++) {
-      const file = uploadedFiles[i];
-      if (file.type !== "application/pdf") continue;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type !== "application/pdf") continue;
 
-      setProgress((i / uploadedFiles.length) * 50);
+        setProgress((i / files.length) * 50);
 
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdfDoc = await pdfCore.loadPDF(arrayBuffer);
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdfDoc = await pdfCore.loadPDF(arrayBuffer);
 
-        const pdfFile: PDFFile = {
-          id: `pdf-${Date.now()}-${i}`,
-          name: file.name,
-          size: file.size,
-          data: arrayBuffer,
-          pageCount: pdfDoc.numPages,
-        };
+          const pdfFile: PDFFile = {
+            id: `pdf-${Date.now()}-${i}`,
+            name: file.name,
+            size: file.size,
+            data: arrayBuffer,
+            pageCount: pdfDoc.numPages,
+          };
 
-        newFiles.push(pdfFile);
+          uploadedFiles.push(pdfFile);
 
-        if (!isMerge && i === 0) {
-          onFileProcessed?.(pdfFile);
+          if (!isMerge && i === 0) {
+            onFileProcessed?.(pdfFile);
+          }
+        } catch (error) {
+          console.error(`Failed to load PDF: ${file.name}`, error);
         }
-      } catch (error) {
-        console.error(`Failed to load PDF: ${file.name}`, error);
       }
-    }
 
-    if (isMerge) {
-      setFiles((prev) => [...prev, ...newFiles]);
-      setMergeOrder((prev) => [...prev, ...newFiles.map((f) => f.id)]);
-    } else {
-      setFiles(newFiles);
-    }
+      if (isMerge) {
+        setFiles((prev) => [...prev, ...uploadedFiles]);
+        setMergeOrder((prev) => [...prev, ...uploadedFiles.map((f) => f.id)]);
+      } else {
+        setFiles(uploadedFiles);
+      }
 
-    setProgress(100);
-    setIsProcessing(false);
-  }, [onFileProcessed]);
+      setProgress(100);
+      setIsProcessing(false);
+    },
+    [onFileProcessed],
+  );
 
-  // PDF Operations
   const mergePDFs = useCallback(async () => {
     if (mergeOrder.length < 2) return;
 
@@ -149,7 +160,7 @@ export default function PDFToolkit({
 
     try {
       const pageRanges = splitRanges.map((range) => {
-        const pages = [];
+        const pages: number[] = [];
         for (let i = range.start; i <= range.end; i++) {
           pages.push(i);
         }
@@ -163,7 +174,8 @@ export default function PDFToolkit({
       splitPdfs.forEach((pdfBytes, index) => {
         const range = splitRanges[index];
         const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
-        const filename = range.name || `${currentFile.name}-part-${index + 1}.pdf`;
+        const filename =
+          range.name || `${currentFile.name}-part-${index + 1}.pdf`;
         pdfCore.downloadBlob(blob, filename);
       });
 
@@ -175,28 +187,31 @@ export default function PDFToolkit({
     }
   }, [currentFile, splitRanges]);
 
-  const rotatePDF = useCallback(async (pageNum?: number) => {
-    if (!currentFile) return;
+  const rotatePDF = useCallback(
+    async (pageNum?: number) => {
+      if (!currentFile) return;
 
-    setIsProcessing(true);
+      setIsProcessing(true);
 
-    try {
-      const targetPage = pageNum || 1;
-      const rotatedPdfBytes = await pdfCore.rotatePDF(
-        currentFile.data,
-        targetPage,
-        rotationAngle,
-      );
+      try {
+        const targetPage = pageNum || 1;
+        const rotatedPdfBytes = await pdfCore.rotatePDF(
+          currentFile.data,
+          targetPage,
+          rotationAngle,
+        );
 
-      const blob = new Blob([new Uint8Array(rotatedPdfBytes)], { type: "application/pdf" });
-      setProgress(100);
-      pdfCore.downloadBlob(blob, `${currentFile.name}-rotated.pdf`);
-    } catch (error) {
-      console.error("Rotation failed:", error);
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [currentFile, rotationAngle]);
+        const blob = new Blob([new Uint8Array(rotatedPdfBytes)], { type: 'application/pdf' });
+        setProgress(100);
+        pdfCore.downloadBlob(blob, `${currentFile.name}-rotated.pdf`);
+      } catch (error) {
+        console.error("Rotation failed:", error);
+      } finally {
+        setIsProcessing(false);
+      }
+    },
+    [currentFile, rotationAngle],
+  );
 
   const compressPDF = useCallback(async () => {
     if (!currentFile) return;
@@ -211,7 +226,10 @@ export default function PDFToolkit({
 
       const originalSize = currentFile.size;
       const compressedSize = compressedPdfBytes.length;
-      const reduction = (((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
+      const reduction = (
+        ((originalSize - compressedSize) / originalSize) *
+        100
+      ).toFixed(1);
 
       const blob = new Blob([new Uint8Array(compressedPdfBytes)], { type: "application/pdf" });
       pdfCore.downloadBlob(blob, `${currentFile.name}-compressed.pdf`);
@@ -225,7 +243,6 @@ export default function PDFToolkit({
     }
   }, [currentFile]);
 
-  // Helper functions
   const addSplitRange = () => {
     const newRange: SplitRange = {
       id: `range-${Date.now()}`,
@@ -256,7 +273,11 @@ export default function PDFToolkit({
   };
 
   const formatFileSize = (bytes: number) => {
-    return pdfCore.formatFileSize(bytes);
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
@@ -350,7 +371,7 @@ export default function PDFToolkit({
           </TabsTrigger>
           <TabsTrigger value="compress">
             <Shrink className="h-4 w-4 mr-1" />
-            Compress
+            Shrink
           </TabsTrigger>
           <TabsTrigger value="tools">
             <Settings className="h-4 w-4 mr-1" />
@@ -390,7 +411,10 @@ export default function PDFToolkit({
                                 size="sm"
                                 variant="outline"
                                 onClick={() =>
-                                  reorderMergeFiles(index, Math.max(0, index - 1))
+                                  reorderMergeFiles(
+                                    index,
+                                    Math.max(0, index - 1),
+                                  )
                                 }
                                 disabled={index === 0}
                               >
@@ -413,8 +437,12 @@ export default function PDFToolkit({
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => {
-                                  setFiles(prev => prev.filter(f => f.id !== fileId));
-                                  setMergeOrder(prev => prev.filter(id => id !== fileId));
+                                  setFiles(
+                                    files.filter((f) => f.id !== fileId),
+                                  );
+                                  setMergeOrder(
+                                    mergeOrder.filter((id) => id !== fileId),
+                                  );
                                 }}
                               >
                                 <Trash2 className="h-3 w-3" />
@@ -436,9 +464,9 @@ export default function PDFToolkit({
                   </Button>
                 </>
               ) : (
-                <p className="text-center text-gray-500 py-8">
-                  Upload PDFs to merge them together
-                </p>
+                <div className="text-center py-8 text-gray-500">
+                  Upload multiple PDF files to merge them
+                </div>
               )}
             </CardContent>
           </Card>
@@ -453,69 +481,84 @@ export default function PDFToolkit({
             <CardContent className="space-y-4">
               {currentFile ? (
                 <>
-                  <div className="flex items-center justify-between">
-                    <span>
-                      Current file: <strong>{currentFile.name}</strong> ({currentFile.pageCount} pages)
-                    </span>
-                    <Button onClick={addSplitRange} size="sm">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Range
-                    </Button>
-                  </div>
-
                   <div className="space-y-2">
-                    {splitRanges.map((range) => (
-                      <div key={range.id} className="flex items-center gap-2 p-2 border rounded">
-                        <Input
-                          placeholder="Range name"
-                          value={range.name}
-                          onChange={(e) => updateSplitRange(range.id, { name: e.target.value })}
-                          className="flex-1"
-                        />
-                        <Label>From:</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={currentFile.pageCount}
-                          value={range.start}
-                          onChange={(e) => updateSplitRange(range.id, { start: parseInt(e.target.value) })}
-                          className="w-20"
-                        />
-                        <Label>To:</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={currentFile.pageCount}
-                          value={range.end}
-                          onChange={(e) => updateSplitRange(range.id, { end: parseInt(e.target.value) })}
-                          className="w-20"
-                        />
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => removeSplitRange(range.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                    <div className="flex items-center justify-between">
+                      <Label>Split Ranges</Label>
+                      <Button size="sm" onClick={addSplitRange}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Range
+                      </Button>
+                    </div>
+
+                    <ScrollArea className="h-48 border rounded p-4">
+                      <div className="space-y-3">
+                        {splitRanges.map((range) => (
+                          <div
+                            key={range.id}
+                            className="grid grid-cols-4 gap-2 items-center p-2 border rounded"
+                          >
+                            <Input
+                              placeholder="Name"
+                              value={range.name}
+                              onChange={(e) =>
+                                updateSplitRange(range.id, {
+                                  name: e.target.value,
+                                })
+                              }
+                            />
+
+                            <Input
+                              type="number"
+                              placeholder="Start"
+                              min={1}
+                              max={currentFile.pageCount}
+                              value={range.start}
+                              onChange={(e) =>
+                                updateSplitRange(range.id, {
+                                  start: parseInt(e.target.value),
+                                })
+                              }
+                            />
+
+                            <Input
+                              type="number"
+                              placeholder="End"
+                              min={1}
+                              max={currentFile.pageCount}
+                              value={range.end}
+                              onChange={(e) =>
+                                updateSplitRange(range.id, {
+                                  end: parseInt(e.target.value),
+                                })
+                              }
+                            />
+
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => removeSplitRange(range.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </ScrollArea>
                   </div>
 
-                  {splitRanges.length > 0 && (
-                    <Button
-                      onClick={splitPDF}
-                      disabled={isProcessing}
-                      className="w-full"
-                    >
-                      <Scissors className="h-4 w-4 mr-2" />
-                      Split into {splitRanges.length} files
-                    </Button>
-                  )}
+                  <Button
+                    onClick={splitPDF}
+                    disabled={splitRanges.length === 0 || isProcessing}
+                    className="w-full"
+                  >
+                    <Scissors className="h-4 w-4 mr-2" />
+                    Split into {splitRanges.length} files
+                  </Button>
                 </>
               ) : (
-                <p className="text-center text-gray-500 py-8">
-                  Upload a PDF to split it into multiple files
-                </p>
+                <div className="text-center py-8 text-gray-500">
+                  Upload a PDF file to split it
+                </div>
               )}
             </CardContent>
           </Card>
@@ -530,19 +573,24 @@ export default function PDFToolkit({
             <CardContent className="space-y-4">
               {currentFile ? (
                 <>
-                  <div className="flex items-center gap-4">
-                    <Label>Rotation angle:</Label>
-                    <Select 
-                      value={rotationAngle.toString()} 
-                      onValueChange={(value) => setRotationAngle(parseInt(value))}
+                  <div className="space-y-2">
+                    <Label>Rotation Angle</Label>
+                    <Select
+                      value={rotationAngle.toString()}
+                      onValueChange={(value) =>
+                        setRotationAngle(parseInt(value))
+                      }
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="90">90°</SelectItem>
+                        <SelectItem value="90">90° Clockwise</SelectItem>
                         <SelectItem value="180">180°</SelectItem>
-                        <SelectItem value="270">270°</SelectItem>
+                        <SelectItem value="270">270° Clockwise</SelectItem>
+                        <SelectItem value="-90">
+                          90° Counter-clockwise
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -553,13 +601,13 @@ export default function PDFToolkit({
                     className="w-full"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Rotate PDF {rotationAngle}°
+                    Rotate All Pages {rotationAngle}°
                   </Button>
                 </>
               ) : (
-                <p className="text-center text-gray-500 py-8">
-                  Upload a PDF to rotate its pages
-                </p>
+                <div className="text-center py-8 text-gray-500">
+                  Upload a PDF file to rotate it
+                </div>
               )}
             </CardContent>
           </Card>
@@ -574,9 +622,39 @@ export default function PDFToolkit({
             <CardContent className="space-y-4">
               {currentFile ? (
                 <>
-                  <div className="text-sm text-gray-600">
-                    <p>Current file size: <strong>{formatFileSize(currentFile.size)}</strong></p>
-                    <p>Compression will optimize the PDF to reduce file size.</p>
+                  <div className="space-y-2">
+                    <Label>Compression Level</Label>
+                    <Select
+                      value={compressionLevel}
+                      onValueChange={setCompressionLevel}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">
+                          Low (Better Quality)
+                        </SelectItem>
+                        <SelectItem value="medium">
+                          Medium (Balanced)
+                        </SelectItem>
+                        <SelectItem value="high">
+                          High (Smaller Size)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded">
+                    <p className="text-sm">
+                      <strong>Current file:</strong> {currentFile.name}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Size:</strong> {formatFileSize(currentFile.size)}
+                    </p>
+                    <p className="text-sm">
+                      <strong>Pages:</strong> {currentFile.pageCount}
+                    </p>
                   </div>
 
                   <Button
@@ -589,9 +667,9 @@ export default function PDFToolkit({
                   </Button>
                 </>
               ) : (
-                <p className="text-center text-gray-500 py-8">
-                  Upload a PDF to compress it
-                </p>
+                <div className="text-center py-8 text-gray-500">
+                  Upload a PDF file to compress it
+                </div>
               )}
             </CardContent>
           </Card>
@@ -599,31 +677,47 @@ export default function PDFToolkit({
 
         {/* Tools Tab */}
         <TabsContent value="tools">
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Tools</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" className="h-20 flex-col">
-                  <FileText className="h-6 w-6 mb-2" />
-                  Extract Text
+          <div className="grid gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Batch Operations</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="outline" className="w-full justify-start">
+                  <Copy className="h-4 w-4 mr-2" />
+                  Duplicate Pages
                 </Button>
-                <Button variant="outline" className="h-20 flex-col">
-                  <Shield className="h-6 w-6 mb-2" />
+                <Button variant="outline" className="w-full justify-start">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Remove Pages
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Shield className="h-4 w-4 mr-2" />
                   Add Password
                 </Button>
-                <Button variant="outline" className="h-20 flex-col">
-                  <Eye className="h-6 w-6 mb-2" />
-                  Remove Password
-                </Button>
-                <Button variant="outline" className="h-20 flex-col">
-                  <FileDown className="h-6 w-6 mb-2" />
-                  Create Invoice
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {currentFile && (
+                  <div className="space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <span className="text-gray-500">File name:</span>
+                      <span>{currentFile.name}</span>
+                      <span className="text-gray-500">File size:</span>
+                      <span>{formatFileSize(currentFile.size)}</span>
+                      <span className="text-gray-500">Pages:</span>
+                      <span>{currentFile.pageCount}</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

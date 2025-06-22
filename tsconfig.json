@@ -25,7 +25,8 @@
       "@hooks/*": ["src/hooks/*"],
       "@lib/*": ["src/lib/*"],
       "@shared/*": ["src/shared/*"],
-      
+      "@pages/*": ["src/pages/*"],
+      "@services/*": ["src/services/*"],
     }
   },
   "include": [
