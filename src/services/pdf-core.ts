@@ -1,6 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, PDFPage, PDFFont, degrees } from 'pdf-lib';
 import * as pdfjs from 'pdfjs-dist';
-import 'pdfjs-dist/build/pdf.worker.entry';
 import { 
   PDFFile, 
   TextElement, 
@@ -30,17 +29,8 @@ export class PDFCoreService {
     return PDFCoreService.instance;
   }
 
-  // ========== Worker Initialization ==========
-  async initializeWorker(): Promise<void> {
-    if (this.workerInitialized) return;
-    
-    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
-    this.workerInitialized = true;
-  }
-
   // ========== PDF Loading and Rendering ==========
   async loadPDF(file: File | ArrayBuffer): Promise<any> {
-    await this.initializeWorker();
     
     const data = file instanceof File ? await file.arrayBuffer() : file;
     return await pdfjs.getDocument({ data }).promise;

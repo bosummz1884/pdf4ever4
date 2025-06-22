@@ -2,9 +2,6 @@ import { createWorker, PSM, RecognizeResult, Worker } from "tesseract.js";
 import * as pdfjsLib from "pdfjs-dist";
 import { OCRResult, OCRLanguage } from "../types/ocr";
 
-// Set the worker location
-(pdfjsLib as any).GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
 export const OCR_LANGUAGES: OCRLanguage[] = [
   { code: "eng", name: "English" },
   { code: "spa", name: "Spanish" },
@@ -44,36 +41,37 @@ export class OCRService {
           "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,!?-()[]{}:;\"'",
       });
 
-      const { data }: RecognizeResult = await worker.recognize(
-        imageData,
-        {},
-        {
-          logger: (m: { status: string; progress: number }) => {
-            if (m.status === "recognizing text" && progressCallback) {
-              progressCallback(
-                Math.round(
-                  ((pageNumber - 1) / totalPages + m.progress / totalPages) * 100
-                )
-              );
-            }
-          },
-        }
-      );
+      const data: any = await worker.recognize(
+  imageData,
+  { 
+    logger: (m: { status: string; progress: number }) => {
+      if (m.status === "recognizing text" && progressCallback) {
+        progressCallback(
+          Math.round(
+            ((pageNumber - 1) / totalPages + m.progress / totalPages) * 100
+          )
+        );
+      }
+    }
+  } as any
+);
 
-      const ocrResults: OCRResult[] = Array.isArray(data.words)
-        ? data.words
-            .filter(
-              (word: any) =>
-                word.text && word.text.trim() && word.confidence > 30
-            )
-            .map((word: any, index: number) => ({
-              id: `ocr-${pageNumber}-${index}`,
-              text: word.text,
-              confidence: word.confidence,
-              bbox: word.bbox,
-              page: pageNumber,
-            }))
-        : [];
+const ocrResults: OCRResult[] = Array.isArray(data.words)
+  ? data.words
+      .filter(
+        (word: any) =>
+          word.text && word.text.trim() && word.confidence > 30
+      )
+      .map((word: any, index: number) => ({
+        id: `ocr-${pageNumber}-${index}`,
+        text: word.text,
+        confidence: word.confidence,
+        bbox: word.bbox,
+        page: pageNumber,
+      }))
+  : [];
+
+
 
       await worker.terminate();
 

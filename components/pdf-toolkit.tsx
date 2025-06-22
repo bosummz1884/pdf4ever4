@@ -36,8 +36,8 @@ import {
   Eye,
   Settings,
 } from "lucide-react";
-import { PDFFile, SplitRange, PDFToolkitProps, InvoiceData } from "../types/pdf-types";
-import { pdfCore } from "../services/pdf-core";
+import { PDFFile, SplitRange, PDFToolkitProps, InvoiceData } from "@/types/pdf-types";
+import { pdfCore } from "./@services/pdfCore";
 
 export default function PDFToolkit({
   onFileProcessed,

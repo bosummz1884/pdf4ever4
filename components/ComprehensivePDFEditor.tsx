@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { PDFDocument, rgb, StandardFonts, PageSizes, degrees, PDFFont, PDFTextField, PDFCheckBox, PDFRadioGroup, PDFDropdown } from "pdf-lib";
-import * as pdfjsLib from "pdfjs-dist";
-import "pdfjs-dist/build/pdf.worker.entry";
+import { pdfjsLib } from "@/lib/pdfWorker";
 import { Rnd } from "react-rnd";
 import { HexColorPicker } from "react-colorful";
 import { nanoid } from "nanoid";
@@ -14,7 +13,7 @@ import { OCRResult } from "@/types/ocr";
 
 // Signature imports
 import SignatureTool from "@components/SignatureTool";
-import { SignatureData, SignaturePlacement } from "@/types/signature";
+import { SignaturePlacement } from "@/types/signature"
 
 // Import utilities from attached assets
 import { cn } from "@utils/utils";
@@ -192,7 +191,6 @@ interface FontInfo {
 // ========== PDF CORE SERVICE ==========
 class PDFCoreService {
   private static instance: PDFCoreService;
-  private workerInitialized = false;
 
   static getInstance(): PDFCoreService {
     if (!PDFCoreService.instance) {
@@ -200,19 +198,13 @@ class PDFCoreService {
     }
     return PDFCoreService.instance;
   }
-
-  async initializeWorker(): Promise<void> {
-    if (this.workerInitialized) return;
     
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
-    this.workerInitialized = true;
-  }
 
   async loadPDF(file: File | ArrayBuffer): Promise<any> {
-    await this.initializeWorker();
+    
     
     const data = file instanceof File ? await file.arrayBuffer() : file;
-    return await pdfjsLib.getDocument({ data }).promise;
+    pdfjsLib.getDocument({ data }).promise;
   }
 
   async renderPage(

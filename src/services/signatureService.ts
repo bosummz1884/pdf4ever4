@@ -1,5 +1,5 @@
 import { sha256 } from "js-sha256";
-import { SignatureData, SignaturePlacement } from "../types/signature";
+import { SignatureData, SignaturePlacement } from "@/types/signature";
 
 export class SignatureService {
   private static instance: SignatureService;

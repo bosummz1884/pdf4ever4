@@ -1,7 +1,7 @@
 import React, { useRef, useState, MouseEvent, useCallback } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { signatureService } from "../services/signatureService";
-import { SignatureData, SignatureToolProps, SignaturePlacement } from "../types/signature";
+import { signatureService } from "@/services/signatureService";
+import { SignatureData, SignatureToolProps, SignaturePlacement } from "@/types/signature";
 
 const SignaturePad: React.FC<{
   onSave?: (dataUrl: string) => void;

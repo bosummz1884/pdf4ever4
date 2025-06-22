@@ -2,11 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
-
-// PDF.js worker setup (global, robust for Vite and prod)
 import * as pdfjsLib from "pdfjs-dist";
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 
 // --- ErrorBoundary definition (same as before) ---
 class ErrorBoundary extends React.Component<
