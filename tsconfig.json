@@ -24,8 +24,8 @@
       "@components/*": ["components/*"],
       "@hooks/*": ["src/hooks/*"],
       "@lib/*": ["src/lib/*"],
+      "@shared/*": ["src/shared/*"],
       
-
     }
   },
   "include": [
@@ -34,7 +34,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "bin"
+    "bin",
   ]
 }

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "@ui/button";
-import { SignupDialog } from "@/components/SignupDialog";
-import { LoginDialog } from "@/components/LoginDialog";
-import { useAuth } from "@/hooks/useAuth";
+import { SignupDialog } from "@components/SignupDialog";
+import { LoginDialog } from "@components/LoginDialog";
+import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@ui/card";
 import {
   FileText,

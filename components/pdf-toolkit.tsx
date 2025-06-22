@@ -37,7 +37,7 @@ import {
   Settings,
 } from "lucide-react";
 import { PDFFile, SplitRange, PDFToolkitProps, InvoiceData } from "@/types/pdf-types";
-import { pdfCore } from "./@services/pdfCore";
+import { pdfCore } from "@/services/pdf-core";
 
 export default function PDFToolkit({
   onFileProcessed,
@@ -130,7 +130,7 @@ export default function PDFToolkit({
       const mergedPdfBytes = await pdfCore.mergePDFs(pdfDataArray);
       setProgress(90);
 
-      const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(mergedPdfBytes)], { type: "application/pdf" });
       pdfCore.downloadBlob(blob, "merged-document.pdf");
 
       setProgress(100);
@@ -162,7 +162,7 @@ export default function PDFToolkit({
 
       splitPdfs.forEach((pdfBytes, index) => {
         const range = splitRanges[index];
-        const blob = new Blob([pdfBytes], { type: "application/pdf" });
+        const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
         const filename = range.name || `${currentFile.name}-part-${index + 1}.pdf`;
         pdfCore.downloadBlob(blob, filename);
       });
@@ -188,7 +188,7 @@ export default function PDFToolkit({
         rotationAngle,
       );
 
-      const blob = new Blob([rotatedPdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([new Uint8Array(rotatdPdfBytes)], { type: "application/pdf" });
       setProgress(100);
       pdfCore.downloadBlob(blob, `${currentFile.name}-rotated.pdf`);
     } catch (error) {
@@ -213,7 +213,7 @@ export default function PDFToolkit({
       const compressedSize = compressedPdfBytes.length;
       const reduction = (((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
 
-      const blob = new Blob([compressedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(compressedPdfBytes)], { type: "application/pdf" });
       pdfCore.downloadBlob(blob, `${currentFile.name}-compressed.pdf`);
 
       alert(`Compression complete! Size reduced by ${reduction}%`);

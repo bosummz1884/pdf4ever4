@@ -35,9 +35,6 @@ import {
   safePDFOperation 
 } from "@attached_assets/ConsolidatedPDFUtils";
 
-// Import components from attached assets  
-import AdvancedTextLayer from "@attached_assets/AdvancedTextLayer";
-import AnnotationManager from "@attached_assets/AnnotationManager";
 import FontManager from "@attached_assets/FontManager";
 import PDFToolkit from "@attached_assets/PDFToolkit";
 
