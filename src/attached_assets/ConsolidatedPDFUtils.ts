@@ -63,26 +63,6 @@ export interface InvoiceData {
   paymentTerms?: string;
 }
 
-export interface TextElement {
-  text: string;
-  x: number;
-  y: number;
-  size: number;
-  color: { r: number; g: number; b: number };
-  font?: string;
-  page: number;
-}
-
-export interface AnnotationElement {
-  type: 'rectangle' | 'circle' | 'line' | 'highlight';
-  x: number;
-  y: number;
-  width?: number;
-  height?: number;
-  color: { r: number; g: number; b: number };
-  strokeWidth: number;
-  page: number;
-}
 
 // PDF Merging Utilities
 export async function mergePDFs(pdfFiles: File[], options: PDFMergeOptions = {}): Promise<Uint8Array> {

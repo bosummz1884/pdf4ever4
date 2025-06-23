@@ -16,12 +16,7 @@ import SignatureTool from "@components/SignatureTool";
 import { SignaturePlacement } from "@/types/signature"
 
 // Import utilities from attached assets
-import { cn } from "@utils/utils";
-import { hexToRgb, rgbToHex, hexToRgbNormalized, commonColors } from "@/attached_assets/colorUtils";
-import pdfCore from "@services/pdf-core";
-import { detectFonts } from "@/attached_assets/fontDetector";
-import FontManager from "@attached_assets/FontManager";
-import PDFToolkit from "@attached_assets/PDFToolkit";
+import pdfCore from "../src/services/pdf-core";
 
 // Available fonts
 const availableFonts = [

@@ -91,15 +91,7 @@ export interface InvoiceData {
   notes?: string;
   paymentTerms?: string;
 }
-export interface TextElement {
-  text: string;
-  x: number;
-  y: number;
-  size: number;
-  color: { r: number; g: number; b: number };
-  font?: string;
-  page: number;
-}
+
 export interface AnnotationElement {
   type: "rectangle" | "circle" | "line" | "highlight";
   x: number;
