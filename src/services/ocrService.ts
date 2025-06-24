@@ -1,6 +1,6 @@
 import { createWorker, PSM, RecognizeResult, Worker } from "tesseract.js";
 import * as pdfjsLib from "pdfjs-dist";
-import { OCRResult, OCRLanguage } from "../types/ocr";
+import { OCRResult, OCRLanguage } from "../types/pdf-types";
 
 export const OCR_LANGUAGES: OCRLanguage[] = [
   { code: "eng", name: "English" },

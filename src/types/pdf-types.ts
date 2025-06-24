@@ -1,6 +1,7 @@
-// Unified type definitions for all PDF editor functionality
+// =======================
+// PDF File Types
+// =======================
 
-// ========== Core PDF Types ==========
 interface PDFFile {
   id: string;
   name: string;
@@ -9,6 +10,10 @@ interface PDFFile {
   pageCount?: number;
   preview?: string;
 }
+
+// =======================
+// PDF Merge/Split Options
+// =======================
 
 interface PDFMergeOptions {
   title?: string;
@@ -24,6 +29,10 @@ interface PDFSplitOptions {
   prefix?: string;
 }
 
+// =======================
+// Split Range
+// =======================
+
 interface SplitRange {
   id: string;
   start: number;
@@ -31,34 +40,10 @@ interface SplitRange {
   name: string;
 }
 
-// ========== Text Element Types ==========
-interface TextElement {
-  id: string;
-  page: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  text: string;
-  value?: string; // for contentEditable compatibility
-  fontSize: number;
-  size?: number; // alias for fontSize
-  fontFamily: string;
-  font?: string; // alias for fontFamily
-  color: string;
-  fontWeight: "normal" | "bold";
-  bold?: boolean; // convenience property
-  fontStyle: "normal" | "italic";
-  italic?: boolean; // convenience property
-  underline?: boolean;
-  textAlign?: "left" | "center" | "right";
-  rotation?: number;
-}
+// =======================
+// Font Types
+// =======================
 
-// Legacy TextBox interface for backward compatibility
-export type TextBox = TextElement;
-
-// ========== Font Management Types ==========
 interface FontInfo {
   name: string;
   family: string;
@@ -67,134 +52,133 @@ interface FontInfo {
   size?: number;
   variants?: string[];
   loaded: boolean;
+  fileUrl?: string; // for loaded fonts
 }
 
-// ========== Annotation Types ==========
-interface BaseAnnotation {
+// =======================
+// Text/Annotation Types
+// =======================
+
+// Textbox
+interface TextBox {
   id: string;
   page: number;
   x: number;
   y: number;
   width: number;
   height: number;
+  value?: string;         // Content-editable
+  text?: string;          // Text content
+  font: string;
+  fontFamily?: string;    // Redundant but common
+  size: number;           // Alias for fontSize
+  fontSize: number;      // Alias for size
   color: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  fontWeight?: string;    // or "normal" | "bold"
+  fontStyle?: string;     // or "normal" | "italic"
+  textAlign?: "left" | "center" | "right";
+  rotation?: number;
+}
+
+// Text Element
+interface TextElement {
+  id: string;
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  text: string;
+  value?: string;            // For contentEditable compatibility, optional
+  fontSize: number;
+  size: number;             // Alias for fontSize, optional
+  fontFamily: string;
+  font?: string;             // Alias for fontFamily, optional
+  color: string;
+  fontWeight: "normal" | "bold";
+  bold?: boolean;            // Convenience, optional
+  fontStyle: "normal" | "italic";
+  italic?: boolean;          // Convenience, optional
+  underline?: boolean;
+  textAlign?: "left" | "center" | "right";
+  rotation?: number;
+}
+
+// =======================
+// Annotation Types
+// =======================
+
+// Base type for all annotation shapes (with optional subtypes)
+interface Annotation {
+  id: string;
+  type:
+    | "highlight"
+    | "rectangle"
+    | "circle"
+    | "freeform"
+    | "signature"
+    | "text"
+    | "checkmark"
+    | "x-mark"
+    | "line"
+    | "image";
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color?: string;
   strokeWidth: number;
+  points: number[];      // For freeform/signature/line
+  text?: string;          // For text annotation
+  fontSize?: number;      // For text annotation
+  src?: string;           // For image/signature
 }
 
-interface ShapeAnnotation extends BaseAnnotation {
-  type: "rectangle" | "circle" | "line";
-}
-
-interface HighlightAnnotation extends BaseAnnotation {
-  type: "highlight";
-}
-
-interface FreeformAnnotation extends BaseAnnotation {
-  type: "freeform" | "signature";
+// **Optional**: specialized annotation element (for legacy/manager)
+interface AnnotationElement {
+  id?: string;
+  type: "highlight" | "rectangle" | "circle" | "freeform" | "signature" | "line";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color?: string | { r: number; g: number; b: number };
+  page: number;
+  strokeWidth: number;
   points: number[];
 }
 
-interface TextAnnotation extends BaseAnnotation {
-  type: "text";
-  text: string;
-  fontSize: number;
-}
+// =======================
+// Form Field Types
+// =======================
 
-interface MarkAnnotation extends BaseAnnotation {
-  type: "checkmark" | "x-mark";
-}
-
-interface ImageAnnotation extends BaseAnnotation {
-  type: "image";
-  src: string;
-}
-
-export type Annotation = 
-  | ShapeAnnotation 
-  | HighlightAnnotation 
-  | FreeformAnnotation 
-  | TextAnnotation 
-  | MarkAnnotation 
-  | ImageAnnotation;
-
-// Legacy annotation interface for backward compatibility
-interface AnnotationElement {
-  id: string;
-  type: "highlight" | "rectangle" | "circle" | "freeform" | "signature";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  page: number;
-  strokeWidth?: number;
-  points?: number[];
-}
-
-// ========== Form Field Types ==========
 interface FormField {
   id: string;
   name?: string;
-  fieldName: string;
-  type: "text" | "checkbox" | "radio" | "dropdown" | "signature";
-  fieldType: string; // PDF internal field type
+  fieldName?: string;   // PDF internal field name
+  type?: "text" | "checkbox" | "radio" | "dropdown" | "signature";
+  fieldType?: string;   // PDF internal field type
   value: string | boolean;
   x: number;
   y: number;
   width: number;
   height: number;
   page: number;
-  rect?: number[];
+  rect: number[];
   options?: string[];
   radioGroup?: string;
   required?: boolean;
   readonly?: boolean;
 }
 
-// ========== Tool Types ==========
-export type AnnotationTool = 
-  | "select"
-  | "highlight"
-  | "rectangle"
-  | "circle"
-  | "freeform"
-  | "eraser"
-  | "signature"
-  | "text"
-  | "checkmark"
-  | "x-mark"
-  | "line";
+// =======================
+// Invoice Types
+// =======================
 
-export type TextTool = "add" | "edit" | "select";
-
-// ========== Color and Style Types ==========
-interface RGBColor {
-  r: number;
-  g: number;
-  b: number;
-}
-
-interface StyleOptions {
-  color: string;
-  strokeWidth: number;
-  fontSize: number;
-  fontFamily: string;
-  fontWeight: "normal" | "bold";
-  fontStyle: "normal" | "italic";
-}
-
-// ========== Canvas and Rendering Types ==========
-interface CanvasPoint {
-  x: number;
-  y: number;
-}
-
-interface ViewportOptions {
-  scale: number;
-  rotation: number;
-}
-
-// ========== Invoice Types (from PDFToolkit) ==========
 interface InvoiceData {
   invoiceNumber: string;
   date: string;
@@ -227,72 +211,206 @@ interface InvoiceData {
   paymentTerms?: string;
 }
 
-// ========== Event Handler Types ==========
-interface PDFEditorCallbacks {
-  onTextElementsChange?: (elements: TextElement[]) => void;
-  onAnnotationsChange?: (annotations: Annotation[]) => void;
-  onFormFieldsChange?: (fields: FormField[]) => void;
-  onFileProcessed?: (file: PDFFile) => void;
-  onPageChange?: (page: number) => void;
-  onZoomChange?: (zoom: number) => void;
+// =======================
+// OCR Types
+// =======================
+
+interface OCRResult {
+  id: string;
+  text: string;
+  confidence: number;
+  bbox: {
+    x0: number;
+    y0: number;
+    x1: number;
+    y1: number;
+  };
+  page: number;
 }
 
-// ========== Component Props Types ==========
- interface BaseComponentProps {
+interface OCRToolProps {
+  pdfDocument?: any;
+  canvasRef?: React.RefObject<HTMLCanvasElement>;
+  currentPage?: number;
+  onTextDetected?: (results: OCRResult[]) => void;
+  onTextBoxCreate?: (x: number, y: number, text: string) => void;
+  onTextExtracted?: (text: string) => void;
+}
+
+interface OCRLanguage {
+  code: string;
+  name: string;
+}
+
+// =======================
+// Signature Types
+// =======================
+
+interface SignatureData {
+  dataUrl: string;
+  hash?: string;
+}
+
+interface SignatureToolProps {
+  onSave?: (dataUrl: string) => void;
+  onComplete?: (dataUrl: string) => void;
+  onSigned?: (result: SignatureData) => void;
+  onClose?: () => void;
+  signatureDataUrl?: string;
+  onPlace?: (placement: SignaturePlacement) => void;
+}
+
+interface SignaturePlacement {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  src: string;
+  page?: number;
+}
+
+interface SignaturePadProps {
+  onSave?: (dataUrl: string) => void;
+  onComplete?: (dataUrl: string) => void;
+  onSigned?: (result: SignatureData) => void;
+  onClose?: () => void;
+  showCancel?: boolean;
+  width: number;
+  height: number;
+}
+
+// =======================
+// Miscellaneous Types
+// =======================
+
+interface UsePDFOperationsOptions {
+  onFileLoaded?: (file: PDFFile) => void;
+  onError?: (error: Error) => void;
+  onProgress?: (progress: number) => void;
+}
+
+interface PDFToolkitProps {
+  onFileProcessed?: (file: PDFFile) => void;
+  currentFile?: PDFFile;
+}
+
+// Font manager
+interface FontManagerProps {
+  selectedFont: string;
+  onFontChange: (font: string) => void;
+  fontSize: number;
+  onFontSizeChange: (size: number) => void;
+  fontWeight: "normal" | "bold";
+  onFontWeightChange: (weight: "normal" | "bold") => void;
+  fontStyle: "normal" | "italic";
+  onFontStyleChange: (style: "normal" | "italic") => void;
+  showAdvanced?: boolean;
+}
+
+// Annotation manager (UI)
+interface AnnotationManagerProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
   currentPage: number;
-  zoom?: number;
-  scale?: number;
-  isActive?: boolean;
+  zoom: number;
+  onAnnotationsChange?: (annotations: Annotation[]) => void;
   showControls?: boolean;
 }
 
-interface TextEditorProps extends BaseComponentProps {
-  textElements?: TextElement[];
-  onTextElementsChange?: (elements: TextElement[]) => void;
-  addMode?: boolean;
-  selectedFont?: string;
-  fontSize?: number;
-  fontColor?: string;
+// =======================
+// UI Dialog & Component Types
+// =======================
+
+interface LoginDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: (user: any, token: string) => void;
+  onSwitchToSignup: () => void;
 }
 
-interface AnnotationToolsProps extends BaseComponentProps {
-  annotations?: Annotation[];
-  onAnnotationsChange?: (annotations: Annotation[]) => void;
-  currentTool?: AnnotationTool;
-  color?: string;
-  strokeWidth?: number;
+interface SignupDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: (user: any, token: string) => void;
 }
 
- interface PDFToolkitProps {
-  onFileProcessed?: (file: PDFFile) => void;
-  currentFile?: PDFFile;
-  files?: PDFFile[];
+export interface EditHistoryAction {
+  type: "add" | "remove" | "update";
+  annotationId: string;
+  previousValue?: Annotation;
+  newValue?: Annotation;
+  timestamp: number;
 }
+
+interface AnnotationTool {
+  // Basic CRUD
+  addAnnotation: (annotation: Annotation) => void;
+  removeAnnotation: (id: string) => void;
+  updateAnnotation: (id: string, updates: Partial<Annotation>) => void;
+  getAnnotation: (id: string) => Annotation | undefined;
+  getAnnotations: (page?: number) => Annotation[];
+  clearAnnotations: () => void;
+
+  // Selection tools
+  selectAnnotation: (id: string) => void;
+  deselectAnnotation: () => void;
+  getSelectedAnnotation: () => Annotation | undefined;
+
+  // Bulk actions
+  importAnnotations: (annotations: Annotation[]) => void;
+  exportAnnotations: () => Annotation[];
+
+  // Undo/Redo & Edit History
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  getEditHistory: () => EditHistoryAction[];
+  clearEditHistory: () => void;
+
+  // Utility
+  moveAnnotation: (id: string, x: number, y: number) => void;
+  resizeAnnotation: (id: string, width: number, height: number) => void;
+  duplicateAnnotation: (id: string) => void;
+  bringToFront: (id: string) => void;
+  sendToBack: (id: string) => void;
+}
+
+export type AnnotationToolName =
+  | "select"
+  | "highlight"
+  | "rectangle"
+  | "circle"
+  | "freeform"
+  | "signature"
+  | "text"
+  | "checkmark"
+  | "x-mark"
+  | "line"
+  | "image";
+
 
 export type {
   PDFFile,
   PDFMergeOptions,
   PDFSplitOptions,
   SplitRange,
-  TextElement,
   FontInfo,
-  BaseAnnotation,
-  ShapeAnnotation,
-  HighlightAnnotation,
-  FreeformAnnotation,
-  TextAnnotation,
-  MarkAnnotation,
-  ImageAnnotation,
+  TextBox,
+  TextElement,
+  Annotation,
+  AnnotationElement,
   FormField,
-  RGBColor,
-  StyleOptions,
-  CanvasPoint,
-  ViewportOptions,
   InvoiceData,
-  PDFEditorCallbacks,
-  BaseComponentProps,
-  TextEditorProps,
-  AnnotationToolsProps,
-  PDFToolkitProps
+  OCRResult,
+  OCRToolProps,
+  OCRLanguage,
+  SignatureData,
+  SignatureToolProps,
+  SignaturePlacement,
+  SignaturePadProps,
+  UsePDFOperationsOptions,
+  PDFToolkitProps,
+  FontManagerProps,
+  AnnotationManagerProps,
+  AnnotationTool,
 };

@@ -1,11 +1,11 @@
 import { useState, useCallback, useRef } from "react";
-import { pdfCore } from "../services/pdf-core";
+import  pdfCore  from "../services/pdf-core";
 import { 
   PDFFile, 
-  TextElement, 
+  TextElement,
   Annotation, 
   FormField, 
-  AnnotationTool 
+  AnnotationToolName
 } from "../types/pdf-types";
 
 interface UsePDFOperationsOptions {
@@ -21,7 +21,7 @@ export function usePDFOperations(options: UsePDFOperationsOptions = {}) {
   const [textElements, setTextElements] = useState<TextElement[]>([]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [formFields, setFormFields] = useState<FormField[]>([]);
-  const [selectedTool, setSelectedTool] = useState<AnnotationTool>("select");
+  const [selectedTool, setSelectedTool] = useState<AnnotationToolName>("select");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
@@ -201,14 +201,14 @@ export function usePDFOperations(options: UsePDFOperationsOptions = {}) {
 
       const exportedPdfBytes = await pdfCore.exportWithAllElements(
         currentFile.data,
-        textElements,
+        TextBox,
         formFields,
         annotations
       );
 
       options.onProgress?.(90);
 
-      const blob = new Blob([exportedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(exportedPdfBytes)], { type: "application/pdf" });
       const downloadName = filename || `${currentFile.name}-edited.pdf`;
       pdfCore.downloadBlob(blob, downloadName);
 
@@ -226,10 +226,10 @@ export function usePDFOperations(options: UsePDFOperationsOptions = {}) {
     try {
       const exportedPdfBytes = await pdfCore.addTextElementsToPDF(
         currentFile.data,
-        textElements
+        textElements,
       );
 
-      const blob = new Blob([exportedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(exportedPdfBytes)], { type: "application/pdf" });
       const downloadName = filename || `${currentFile.name}-text-only.pdf`;
       pdfCore.downloadBlob(blob, downloadName);
     } catch (error) {
@@ -246,7 +246,7 @@ export function usePDFOperations(options: UsePDFOperationsOptions = {}) {
         annotations
       );
 
-      const blob = new Blob([exportedPdfBytes], { type: "application/pdf" });
+      const blob = new Blob([new Uint8Array(exportedPdfBytes)], { type: "application/pdf" });
       const downloadName = filename || `${currentFile.name}-annotations-only.pdf`;
       pdfCore.downloadBlob(blob, downloadName);
     } catch (error) {
@@ -316,7 +316,6 @@ export function usePDFOperations(options: UsePDFOperationsOptions = {}) {
     removeAnnotation,
     clearAnnotations,
     setAnnotations,
-    selectedTool,
     setSelectedTool,
 
     // Form fields

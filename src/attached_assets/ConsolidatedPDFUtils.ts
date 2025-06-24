@@ -1,68 +1,28 @@
 import { PDFDocument, rgb, StandardFonts, PageSizes } from 'pdf-lib';
 import { pdfjsLib } from './pdfWorker';
-
+import {  PDFFile,
+  PDFMergeOptions,
+  PDFSplitOptions,
+  SplitRange,
+  FontInfo,
+  TextBox,
+  TextElement,
+  Annotation,
+  AnnotationElement,
+  FormField,
+  InvoiceData,
+  OCRResult,
+  OCRToolProps,
+  OCRLanguage,
+  SignatureData,
+  SignatureToolProps,
+  SignaturePlacement,
+  SignaturePadProps,
+  UsePDFOperationsOptions,
+  PDFToolkitProps,
+  FontManagerProps,
+  AnnotationManagerProps } from "../types/pdf-types";
 // Merged functionality from pdfUtils.ts, livePdfProcessor.js, pageTools.js, pdfFormFiller.js, pdfInvoiceGenerator.js
-
-export interface PDFMergeOptions {
-  title?: string;
-  author?: string;
-  subject?: string;
-  keywords?: string[];
-  creator?: string;
-}
-
-export interface PDFSplitOptions {
-  outputFormat?: 'separate' | 'range';
-  pageRanges?: Array<{ start: number; end: number }>;
-  prefix?: string;
-}
-
-export interface FormField {
-  name: string;
-  type: 'text' | 'checkbox' | 'radio' | 'dropdown' | 'signature';
-  value: string | boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  page: number;
-  options?: string[];
-  required?: boolean;
-  readonly?: boolean;
-}
-
-export interface InvoiceData {
-  invoiceNumber: string;
-  date: string;
-  dueDate?: string;
-  from: {
-    name: string;
-    address: string[];
-    email?: string;
-    phone?: string;
-  };
-  to: {
-    name: string;
-    address: string[];
-    email?: string;
-    phone?: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    rate: number;
-    amount: number;
-  }>;
-  subtotal: number;
-  tax?: {
-    rate: number;
-    amount: number;
-  };
-  total: number;
-  notes?: string;
-  paymentTerms?: string;
-}
-
 
 // PDF Merging Utilities
 export async function mergePDFs(pdfFiles: File[], options: PDFMergeOptions = {}): Promise<Uint8Array> {

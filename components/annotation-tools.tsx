@@ -28,7 +28,28 @@ import {
   X
 } from "lucide-react";
 import { nanoid } from "nanoid";
-import { Annotation, AnnotationTool, AnnotationToolsProps } from "@/types/pdf-types";
+import {  PDFFile,
+  PDFMergeOptions,
+  PDFSplitOptions,
+  SplitRange,
+  FontInfo,
+  TextBox,
+  TextElement,
+  Annotation,
+  AnnotationElement,
+  FormField,
+  InvoiceData,
+  OCRResult,
+  OCRToolProps,
+  OCRLanguage,
+  SignatureData,
+  SignatureToolProps,
+  SignaturePlacement,
+  SignaturePadProps,
+  UsePDFOperationsOptions,
+  PDFToolkitProps,
+  FontManagerProps,
+  AnnotationManagerProps } from "../src/types/pdf-types";
 
 // Predefined colors for quick selection
 const colorPalette = [

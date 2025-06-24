@@ -9,15 +9,30 @@ import { twMerge } from "tailwind-merge";
 
 // OCR imports
 import OCRTool from "@components/OCRTool";
-import { OCRResult } from "@/types/ocr";
-
-// Signature imports
 import SignatureTool from "@components/SignatureTool";
-import { SignaturePlacement } from "@/types/signature"
-
-// Import utilities from attached assets
-import pdfCore from "../src/services/pdf-core";
-
+import pdfCore from "./src/lib/pdfCore";
+import {  PDFFile,
+  PDFMergeOptions,
+  PDFSplitOptions,
+  SplitRange,
+  FontInfo,
+  TextBox,
+  TextElement,
+  Annotation,
+  AnnotationElement,
+  FormField,
+  InvoiceData,
+  OCRResult,
+  OCRToolProps,
+  OCRLanguage,
+  SignatureData,
+  SignatureToolProps,
+  SignaturePlacement,
+  SignaturePadProps,
+  UsePDFOperationsOptions,
+  PDFToolkitProps,
+  FontManagerProps,
+  AnnotationManagerProps } from "../src/types/pdf-types";
 // Available fonts
 const availableFonts = [
   "Arial",
@@ -53,117 +68,6 @@ const baseFonts = [
   "Courier New",
 ];
 
-// ========== TYPE DEFINITIONS ==========
-interface TextBox {
-  id: string;
-  page: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  value?: string;
-  text?: string;
-  font: string;
-  fontFamily?: string;
-  size: number;
-  fontSize?: number;
-  color: string;
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  fontWeight?: string;
-  fontStyle?: string;
-}
-
-interface Annotation {
-  id: string;
-  type: "highlight" | "rectangle" | "circle" | "freeform" | "signature" | "text" | "checkmark" | "x-mark" | "line" | "image";
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  color: string;
-  strokeWidth: number;
-  page: number;
-  points?: number[];
-  text?: string;
-  fontSize?: number;
-  src?: string;
-}
-
-interface FormField {
-  id: string;
-  fieldName: string;
-  fieldType: string;
-  rect: number[];
-  value: string;
-  options?: string[];
-  radioGroup?: string;
-  page: number;
-  required?: boolean;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-interface PDFFile {
-  id: string;
-  name: string;
-  size: number;
-  data: ArrayBuffer;
-  pageCount?: number;
-  preview?: string;
-}
-
-interface InvoiceData {
-  invoiceNumber: string;
-  date: string;
-  dueDate?: string;
-  from: {
-    name: string;
-    address: string[];
-    email?: string;
-    phone?: string;
-  };
-  to: {
-    name: string;
-    address: string[];
-    email?: string;
-    phone?: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    rate: number;
-    amount: number;
-  }>;
-  subtotal: number;
-  tax?: {
-    rate: number;
-    amount: number;
-  };
-  total: number;
-  notes?: string;
-  paymentTerms?: string;
-}
-
-interface SplitRange {
-  id: string;
-  start: number;
-  end: number;
-  name: string;
-}
-
-interface FontInfo {
-  name: string;
-  family: string;
-  style: string;
-  weight: string;
-  size?: number;
-  variants?: string[];
-  loaded: boolean;
-}
 // ========== FONT FACE OBSERVER ==========
 class FontFaceObserver {
   family: string;
@@ -220,13 +124,16 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
   const [renderingError, setRenderingError] = useState<string | null>(null);
 
   // Tools and modes
-  const [currentTool, setCurrentTool] = useState<"select" | "text" | "highlight" | "rectangle" | "circle" | "freeform" | "form" | "signature" | "eraser" | "checkmark" | "x-mark" | "line" | "image">("select");
+  const [currentTool, setCurrentTool] = useState<"select" | "text" | "highlight" | "rectangle" | "circle" | "freeform" | "form" | "signature" | "eraser" | "checkmark" | "x-mark" | "line" | "image" | "whiteout">("select");
   const [activeTab, setActiveTab] = useState("edit");
 
   // Text elements state
   const [textBoxes, setTextBoxes] = useState<TextBox[]>([]);
   const [selectedTextBoxId, setSelectedTextBoxId] = useState<string | null>(null);
   const [isAddingText, setIsAddingText] = useState(false);
+  const [isEditingText, setIsEditingText] = useState(false);
+  const [textValue, setTextValue] = useState("");
+  const [textElement, setTextElement] = useState<TextElement | null>(null);
 
   // Text properties
   const [selectedFont, setSelectedFont] = useState("Helvetica");
@@ -244,6 +151,11 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentPath, setCurrentPath] = useState<number[]>([]);
+  const [whiteoutBlocks, setWhiteoutBlocks] = useState<WhiteoutBlock[]>([]);
+  const [isWhiteoutDrawing, setIsWhiteoutDrawing] = useState(false);
+  const [whiteoutStartPoint, setWhiteoutStartPoint] = useState<{ x: number; y: number } | null>(null);
+  const [whiteoutPreview, setWhiteoutPreview] = useState<WhiteoutBlock | null>(null);
+  const [whiteoutMode, setWhiteoutMode] = useState<"normal" | "preview">("normal");
 
   // Form fields state
   const [formFields, setFormFields] = useState<FormField[]>([]);
@@ -452,6 +364,36 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // --- Draw Whiteout Blocks FIRST (so they appear under annotations) ---
+    whiteoutBlocks
+      .filter((block) => block.page === currentPage)
+      .forEach((block) => {
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = block.color || "#FFFFFF";
+        ctx.fillRect(
+          block.x * (zoom / 100),
+          block.y * (zoom / 100),
+          block.width * (zoom / 100),
+          block.height * (zoom / 100)
+        );
+        ctx.restore();
+      });
+
+    // Draw preview while dragging a new whiteout block
+    if (whiteoutPreview && whiteoutPreview.page === currentPage) {
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = "#FFF";
+      ctx.fillRect(
+        whiteoutPreview.x * (zoom / 100),
+        whiteoutPreview.y * (zoom / 100),
+        whiteoutPreview.width * (zoom / 100),
+        whiteoutPreview.height * (zoom / 100)
+      );
+      ctx.restore();
+    }
+
 
     annotations
       .filter((annotation) => annotation.page === currentPage)
@@ -467,6 +409,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
         const height = annotation.height * (zoom / 100);
 
         switch (annotation.type) {
+          
           case "highlight":
             ctx.globalAlpha = 0.3;
             ctx.fillRect(x, y, width, height);
@@ -612,6 +555,13 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
   }, [currentTool, isAddingText, canvasRef, zoom, currentPage, selectedFont, fontSize, textColor, fontWeight, fontStyle]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (currentTool === "whiteout") {
+      setIsWhiteoutDrawing(true);
+      setWhiteoutStartPoint(getCanvasPoint(e));
+      return;
+    }
+    
+
     if (currentTool === "select") return;
 
     const point = getCanvasPoint(e);
@@ -624,6 +574,20 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
   }, [currentTool, getCanvasPoint]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isWhiteoutDrawing && whiteoutStartPoint) {
+      const point = getCanvasPoint(e);
+      setWhiteoutPreview({
+        id: "preview",
+        x: Math.min(whiteoutStartPoint.x, point.x),
+        y: Math.min(whiteoutStartPoint.y, point.y),
+        width: Math.abs(point.x - whiteoutStartPoint.x),
+        height: Math.abs(point.y - whiteoutStartPoint.y),
+        page: currentPage,
+        color: "#FFFFFF"
+      });
+      return;
+    }
+    
     if (!isDrawing || !startPoint) return;
 
     const point = getCanvasPoint(e);
@@ -653,6 +617,24 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (!isDrawing || !startPoint || currentTool === "select") return;
+    if (isWhiteoutDrawing && whiteoutStartPoint) {
+  const point = getCanvasPoint(e);
+  const newBlock: WhiteoutBlock = {
+    id: nanoid(),
+    x: Math.min(whiteoutStartPoint.x, point.x),
+    y: Math.min(whiteoutStartPoint.y, point.y),
+    width: Math.abs(point.x - whiteoutStartPoint.x),
+    height: Math.abs(point.y - whiteoutStartPoint.y),
+    page: currentPage,
+    color: "#FFFFFF"
+  };
+  setWhiteoutBlocks((prev) => [...prev, newBlock]);
+  setIsWhiteoutDrawing(false);
+  setWhiteoutStartPoint(null);
+  setWhiteoutPreview(null);
+  return;
+}
+
 
     const point = getCanvasPoint(e);
     const newId = nanoid();
@@ -672,6 +654,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
           color: annotationColor,
           strokeWidth,
           page: currentPage,
+          points: [],
         };
         break;
 
@@ -685,6 +668,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
           height: Math.abs(point.y - startPoint.y),
           color: annotationColor,
           strokeWidth,
+          points: currentPath,
           page: currentPage,
         };
         break;
@@ -700,6 +684,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
           color: annotationColor,
           strokeWidth,
           page: currentPage,
+          points: currentPath,
         };
         break;
 
@@ -713,6 +698,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
           width: Math.abs(point.x - startPoint.x),
           height: Math.abs(point.y - startPoint.y),
           color: annotationColor,
+          points: currentPath,
           strokeWidth,
           page: currentPage,
         };
@@ -734,6 +720,7 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
             width: maxX - minX,
             height: maxY - minY,
             color: annotationColor,
+            fontSize: fontSize,
             strokeWidth,
             page: currentPage,
             points: currentPath,
@@ -855,7 +842,9 @@ const ComprehensivePDFEditor = (props: { className?: string }) => {
       width: placement.width,
       height: placement.height,
       color: "#000000",
+      fontSize: fontSize,
       strokeWidth: 1,
+      points: [],
       page: currentPage,
       src: placement.src
     };
